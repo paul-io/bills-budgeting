@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from "aws-amplify/data";
 import { uploadData, remove } from 'aws-amplify/storage';
+import { getCurrentUser } from 'aws-amplify/auth';
 import { notifications } from '@mantine/notifications';
 import type { Schema } from "../../amplify/data/resource";
 import type { Transaction } from '../utils/types';
@@ -16,14 +17,38 @@ export const useTransactions = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const subscription = client.models.Transaction.observeQuery().subscribe({
-      next: (data: { items: any; }) => {
-        setTransactions([...data.items]);
+    let subscription: any;
+
+    const initializeData = async () => {
+      try {
+        // Ensure user is authenticated before subscribing
+        const user = await getCurrentUser();
+        
+        if (user) {
+          subscription = client.models.Transaction.observeQuery().subscribe({
+            next: (data: { items: any; }) => {
+              setTransactions([...data.items]);
+              setIsLoadingTransactions(false);
+            },
+            error: (err: any) => {
+              console.error("Error subscribing to transactions:", err);
+              setIsLoadingTransactions(false);
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
         setIsLoadingTransactions(false);
-      },
-    });
-    
-    return () => subscription.unsubscribe();
+      }
+    };
+
+    initializeData();
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
   }, []);
 
   const uploadFile = async (file: File): Promise<string | null> => {

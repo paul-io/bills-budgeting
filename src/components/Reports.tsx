@@ -30,7 +30,7 @@ export default function Reports({ transactions }: ReportsProps) {
   // State management
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
   const [timeScale, setTimeScale] = useState<TimeScale>('monthly');
-  const [chartType, setChartType] = useState<ChartType>('bar');
+  const [chartType, setChartType] = useState<ChartType>('area');
 
   const [isProcessing, setIsProcessing] = useState(false);
 

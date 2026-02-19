@@ -261,34 +261,6 @@ useEffect(() => {
     }
   };
 
-  // const handleDeleteTransaction = async (id: string): Promise<void> => {
-  //   setIsDeleting(id);
-    
-  //   try {
-  //     const result = await client.models.Transaction.delete({ id });
-      
-  //     if (!result.data) {
-  //       throw new Error('Failed to delete transaction');
-  //     }
-      
-  //     notifications.show({
-  //       title: 'Transaction Deleted',
-  //       message: 'Transaction removed successfully',
-  //       color: 'green',
-  //       autoClose: TOAST_SUCCESS_DURATION,
-  //     });
-  //   } catch (err) {      
-  //     notifications.show({
-  //       title: 'Delete Failed',
-  //       message: 'Could not delete transaction. Please try again.',
-  //       color: 'red',
-  //       autoClose: TOAST_ERROR_DURATION,
-  //     });
-  //   } finally {
-  //     setIsDeleting(null);
-  //   }
-  // };
-  
   const handleDeleteTransaction = async (id: string): Promise<void> => {
   setIsDeleting(id);
   

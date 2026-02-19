@@ -19,6 +19,7 @@ import type { Schema } from '../amplify/data/resource';
 import type { NavigationSection } from './utils/types';
 
 function App() {
+
   const {
     transactions,
     isLoadingTransactions,
@@ -144,7 +145,10 @@ function App() {
           <>
             <AppLayout
               user={user}
-              signOut={signOut || (() => {})}
+              signOut={() => {
+                setActiveSection('dashboard');
+                signOut?.();
+              }}
               activeSection={activeSection}
               onNavigate={setActiveSection}
               onExport={exportToCSV}

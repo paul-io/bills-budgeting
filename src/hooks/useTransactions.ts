@@ -7,6 +7,7 @@ import { notifications } from '@mantine/notifications';
 import type { Schema } from "../../amplify/data/resource";
 import type { Transaction } from '../utils/types';
 import { TOAST_SUCCESS_DURATION, TOAST_ERROR_DURATION } from '../utils/constants';
+import { Hub } from 'aws-amplify/utils';
 
 const client = generateClient<Schema>();
 
@@ -16,22 +17,61 @@ export const useTransactions = () => {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   let subscription: any;
+
+  //   const initializeData = async () => {
+  //     try {
+  //       // Ensure user is authenticated before subscribing
+  //       const user = await getCurrentUser();
+        
+  //       if (user) {
+  //         subscription = client.models.Transaction.observeQuery().subscribe({
+  //           next: (data: { items: any; }) => {
+  //             setTransactions([...data.items]);
+  //             setIsLoadingTransactions(false);
+  //           },
+  //           error: (err: any) => {
+  //             console.error("Error subscribing to transactions:", err);
+  //             setIsLoadingTransactions(false);
+  //           }
+  //         });
+  //       }
+  //     } catch (error) {
+  //       console.error("Auth check failed:", error);
+  //       setIsLoadingTransactions(false);
+  //     }
+  //   };
+
+  //   initializeData();
+
+  //   return () => {
+  //     if (subscription) {
+  //       subscription.unsubscribe();
+  //     }
+  //   };
+  // }, []);
+
+useEffect(() => {
     let subscription: any;
 
     const initializeData = async () => {
       try {
-        // Ensure user is authenticated before subscribing
         const user = await getCurrentUser();
         
         if (user) {
+          setTransactions([]);
+          setIsLoadingTransactions(true);
+          
+          const client = generateClient<Schema>();
+          
           subscription = client.models.Transaction.observeQuery().subscribe({
             next: (data: { items: any; }) => {
               setTransactions([...data.items]);
               setIsLoadingTransactions(false);
             },
             error: (err: any) => {
-              console.error("Error subscribing to transactions:", err);
+              console.error("Error:", err);
               setIsLoadingTransactions(false);
             }
           });
@@ -44,10 +84,19 @@ export const useTransactions = () => {
 
     initializeData();
 
+    // Listen for auth changes
+    const unsubscribeHub = Hub.listen('auth', (data) => {
+      if (data.payload.event === 'signedIn' || data.payload.event === 'signedOut') {
+        // Re-run initialization when auth changes
+        initializeData();
+      }
+    });
+
     return () => {
       if (subscription) {
         subscription.unsubscribe();
       }
+      unsubscribeHub();
     };
   }, []);
 

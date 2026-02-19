@@ -9,7 +9,6 @@ import {
   Grid,
   Text,
   Stack,
-  Skeleton, 
   Center,   
   Loader,   
 } from '@mantine/core';
@@ -57,12 +56,12 @@ export default function Reports({ transactions }: ReportsProps) {
         break;
       case 'all':
         setDateRange([null, null]);
-        setTimeout(() => setIsProcessing(false), 300); // Small delay for visual feedback
+        setTimeout(() => setIsProcessing(false), 300);
         return;
     }
     
     setDateRange([start, today]);
-    setTimeout(() => setIsProcessing(false), 300); // Small delay for visual feedback
+    setTimeout(() => setIsProcessing(false), 300); 
   };
 
   // Filter transactions by date range

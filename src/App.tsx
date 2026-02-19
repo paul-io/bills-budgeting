@@ -33,7 +33,6 @@ function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [editingTransaction, setEditingTransaction] = useState<Schema['Transaction']['type'] | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const openCreateModal = () => {
     setModalMode('create');

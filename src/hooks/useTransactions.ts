@@ -212,33 +212,76 @@ export const useTransactions = () => {
     }
   };
 
-  const handleDeleteTransaction = async (id: string): Promise<void> => {
-    setIsDeleting(id);
+  // const handleDeleteTransaction = async (id: string): Promise<void> => {
+  //   setIsDeleting(id);
     
-    try {
-      const result = await client.models.Transaction.delete({ id });
+  //   try {
+  //     const result = await client.models.Transaction.delete({ id });
       
-      if (!result.data) {
-        throw new Error('Failed to delete transaction');
+  //     if (!result.data) {
+  //       throw new Error('Failed to delete transaction');
+  //     }
+      
+  //     notifications.show({
+  //       title: 'Transaction Deleted',
+  //       message: 'Transaction removed successfully',
+  //       color: 'green',
+  //       autoClose: TOAST_SUCCESS_DURATION,
+  //     });
+  //   } catch (err) {      
+  //     notifications.show({
+  //       title: 'Delete Failed',
+  //       message: 'Could not delete transaction. Please try again.',
+  //       color: 'red',
+  //       autoClose: TOAST_ERROR_DURATION,
+  //     });
+  //   } finally {
+  //     setIsDeleting(null);
+  //   }
+  // };
+  
+  const handleDeleteTransaction = async (id: string): Promise<void> => {
+  setIsDeleting(id);
+  
+  try {
+    // Find the transaction to get its attachment path
+    const transactionToDelete = transactions.find(t => t.id === id);
+    
+    // Delete the S3 file first if it exists
+    if (transactionToDelete?.attachmentPath) {
+      try {
+        await remove({ path: transactionToDelete.attachmentPath });
+        console.info(`Deleted attachment: ${transactionToDelete.attachmentPath}`);
+      } catch (error) {
+        console.error(`Error deleting attachment: ${error}`);
+        // Continue with transaction deletion even if file deletion fails
       }
-      
-      notifications.show({
-        title: 'Transaction Deleted',
-        message: 'Transaction removed successfully',
-        color: 'green',
-        autoClose: TOAST_SUCCESS_DURATION,
-      });
-    } catch (err) {      
-      notifications.show({
-        title: 'Delete Failed',
-        message: 'Could not delete transaction. Please try again.',
-        color: 'red',
-        autoClose: TOAST_ERROR_DURATION,
-      });
-    } finally {
-      setIsDeleting(null);
     }
-  };
+    
+    // Then delete the transaction from DynamoDB
+    const result = await client.models.Transaction.delete({ id });
+    
+    if (!result.data) {
+      throw new Error('Failed to delete transaction');
+    }
+    
+    notifications.show({
+      title: 'Transaction Deleted',
+      message: 'Transaction removed successfully',
+      color: 'green',
+      autoClose: TOAST_SUCCESS_DURATION,
+    });
+  } catch (err) {      
+    notifications.show({
+      title: 'Delete Failed',
+      message: 'Could not delete transaction. Please try again.',
+      color: 'red',
+      autoClose: TOAST_ERROR_DURATION,
+    });
+  } finally {
+    setIsDeleting(null);
+  }
+};
 
   const exportToCSV = () => {
     const csv = [

@@ -130,9 +130,9 @@ function App() {
                     color="blue"
                     mb="lg"
                   >
-                    <strong>Email:</strong> DemoUser@example.com
+                    <strong style={{ color: '#000' }}>Email:</strong> DemoUser@example.com
                     <br />
-                    <strong>Password:</strong> Password123!
+                    <strong style={{ color: '#000' }}>Password:</strong> Password123!
                   </Alert>
                 </>
               );

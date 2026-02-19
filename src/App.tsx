@@ -127,12 +127,12 @@ function App() {
                   <Alert 
                     icon={<IconInfoCircle size={16} />} 
                     title="Try the demo account to see the dashboard in action!" 
-                    color="blue"
+                    color="blue.9"
                     mb="lg"
                   >
-                    <strong style={{ color: '#000' }}>Email:</strong> DemoUser@example.com
+                    <strong style={{ color: '#000' }}>Email:</strong> <span style={{ color: '#000' }}>DemoUser@example.com</span> 
                     <br />
-                    <strong style={{ color: '#000' }}>Password:</strong> Password123!
+                    <strong style={{ color: '#000' }}>Password:</strong> <span style={{ color: '#000' }}>Password123!</span> 
                   </Alert>
                 </>
               );

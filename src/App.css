@@ -41,27 +41,24 @@
   color: #888;
 }
 
-/* This targets the actual background of the entire page */
 [data-amplify-authenticator] {
-  background-color: #ffffff !important; /* Or whatever color you want the 'void' to be */
+  background-color: #ffffff !important; 
   width: 100vw !important;
   height: 100vh !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   margin: 0 !important;
-  position: fixed; /* Ensures it covers everything even if there's weird padding */
+  position: fixed; 
   top: 0;
   left: 0;
 }
 
-/* Ensure the body doesn't have any hidden margins causing that gray gap */
 body, html {
   margin: 0;
   padding: 0;
 }
 
-/* Targets every internal layout container Amplify uses */
 [data-amplify-authenticator],
 .amplify-authenticator,
 [data-amplify-router] {

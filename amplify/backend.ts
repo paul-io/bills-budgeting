@@ -4,7 +4,6 @@ import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { storage } from "./storage/resource";
 import { myDynamoDBFunction } from "./functions/dynamoDB-function/resource";
-import outputs from "../amplify_outputs.json"
 
 import { Stack } from "aws-cdk-lib";
 import { Policy, PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
@@ -16,6 +15,10 @@ const backend = defineBackend({
   storage,
   myDynamoDBFunction,
 });
+
+// Get the S3 bucket and pass it to Lambda
+const storageResource = backend.storage.resources.bucket;
+backend.myDynamoDBFunction.addEnvironment("S3_BUCKET_NAME", storageResource.bucketName);
 
 // Retrieve the DynamoDB table from the data resource
 const transactionTable = backend.data.resources.tables["Transaction"];

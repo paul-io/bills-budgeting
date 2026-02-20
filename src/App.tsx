@@ -87,7 +87,7 @@ function App() {
   };
 
   const renderContent = (user: any) => {
-    const isDemoUser = user?.username === 'DemoUser@example.com';
+    const isDemoUser = user?.signInDetails?.loginId === 'DemoUser@example.com';
     switch (activeSection) {
       case 'dashboard':
         return (

@@ -132,6 +132,7 @@ export const TransactionsPage = ({
       {processedTransactions.length > 0 ? (
         <TransactionTable
           transactions={processedTransactions}
+          isDemoUser={isDemoUser}
           onEdit={onEditTransaction}
           onDelete={handleDeleteClick}
           onViewAttachment={onViewAttachment}

@@ -6,6 +6,7 @@ import { getFilenameFromPath, truncateFilename, formatDate } from '../../utils/f
 
 interface TransactionTableProps {
   transactions: Transaction[];
+  isDemoUser: boolean;
   onEdit: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
   onViewAttachment: (path: string) => void;
@@ -17,6 +18,7 @@ interface TransactionTableProps {
  */
 export const TransactionTable = ({
   transactions,
+  isDemoUser,
   onEdit,
   onDelete,
   onViewAttachment,
@@ -97,14 +99,14 @@ export const TransactionTable = ({
                     <Menu.Dropdown>
                       <Menu.Item 
                         leftSection={<IconEdit size={14} />}
-                        onClick={() => onEdit(transaction)}
+                        onClick={() => !isDemoUser ? onEdit(transaction) : null}
                       >
                         Edit
                       </Menu.Item>
                       <Menu.Item 
                         leftSection={<IconTrash size={14} />}
                         color="red"
-                        onClick={() => onDelete(transaction)}
+                        onClick={() => !isDemoUser ? onDelete(transaction) : null}
                       >
                         Delete
                       </Menu.Item>

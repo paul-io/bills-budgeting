@@ -178,7 +178,7 @@ function App() {
               ) : (
                 <TransactionModal
                   mode={modalMode}
-                  isDemoUser={user?.username === 'DemoUser@example.com' ? true : false}
+                  isDemoUser={user?.signInDetails?.loginId === 'DemoUser@example.com' ? true : false}
                   transaction={editingTransaction ?? undefined}
                   onSave={handleModalSave}
                   close={() => setModalOpen(false)}

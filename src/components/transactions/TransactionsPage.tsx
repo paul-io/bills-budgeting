@@ -104,6 +104,11 @@ export const TransactionsPage = ({
   return (
     <Stack>
       {/* Header */}
+      {isDemoUser && (
+        <Alert icon={<IconAlertCircle size={16} />} title="Demo Account - Read Only" color="yellow" mb="lg">
+          This is a read-only demo account. Create your own account to add, edit, or delete transactions.
+        </Alert>
+        )}
       <Group justify="space-between">
         <Title order={2}>Transactions</Title>
         <Button 

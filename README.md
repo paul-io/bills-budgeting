@@ -1,104 +1,98 @@
-# Bills
+# Bills Budgeting
 
-A full-stack expense tracking application built with AWS Amplify Gen 2, React, and TypeScript. Tracks income and expenses with file attachments, real-time updates, and detailed analytics.
+Bills Budgeting is a full-stack personal finance app built with modern AWS infrastructure. Track income and expenses, upload file attachments, get real-time updates, and see detailed analytics on spending patterns. Try the deployed site below.
 
-[Live Demo](#) • [Video Walkthrough](#)
+## [#Click me to try the app yourself](https://master.ddu5dedoqfjsz.amplifyapp.com/)
+
+## Demo Account
+
+Test the app without creating an account:
+
+- **Email:** DemoUser@example.com
+- **Password:** Password123!
+
+This account is read-only and pre-populated with sample transactions.
+
+![Demo GIF](./docs/Demo.gif)
 
 ## Architecture
 
-Built entirely on AWS infrastructure:
+![Architecture Diagram](./docs/architecture.png)
 
-```
-┌─────────────┐
-│   React +   │
-│  TypeScript │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│   Cognito   │ ◄── User authentication
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│   AppSync   │ ◄── GraphQL API with real-time subscriptions
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  DynamoDB   │ ◄── Transaction storage
-└──────┬──────┘
-       │
-       ▼ (Streams)
-┌─────────────┐
-│   Lambda    │ ◄── Automatic cleanup of S3 attachments
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│     S3      │ ◄── File attachment storage
-└─────────────┘
-```
+## About This Project
 
-## Key Features
+I built Bills Budgeting to deep-dive into full-stack development with AWS infrastructure. 
+Specifically, I wanted hands-on experience with:
 
-### Security
-- Owner-based authorization via Cognito - users only see their own data
-- API requests authenticated through IAM roles
-- S3 attachments scoped to authenticated users
-- Budget alerts configured to prevent runaway costs
+- **AWS Services** - Practical experience with DynamoDB, S3, Lambda, CloudWatch, Cognito and AppSync
+- **Infrastructure-as-Code** - Using Amplify Gen 2 to orchestrate backend resources in TypeScript 
+- **Authentication & Authorization** - Implementing Cognito user pools and owner-based data 
+  access rules
+- **Real-time data synchronization** - Understanding how AppSync subscriptions work and 
+  managing data state across multiple users
 
-### File Attachments
-- Upload receipts, invoices, or documents with transactions
-- Stored in S3 with automatic cleanup when transactions are deleted
-- Lambda function triggered by DynamoDB Streams handles orphaned files
 
-### Real-Time Sync
-- AppSync subscriptions push updates across all active sessions
-- No polling required - changes appear instantly
-- Built-in conflict resolution through DynamoDB
+Beyond the tech, I wanted to build something **complete and deployable**—not just a local 
+project. This meant learning deployment workflows, handling edge cases, and debugging issues 
+in production.
 
-### Analytics
-- Income vs expense trends with configurable time periods
-- Visual breakdowns via charts (daily/weekly/monthly/yearly views)
-- Export filtered data to CSV
+## Features
+
+- **Transaction Management** - Create, update, and delete income and expense entries with real-time sync
+- **File Attachments** - Upload receipts and documents to transactions, stored securely in S3
+- **Real-Time Updates** - Changes appear instantly via AppSync subscriptions—no page refresh needed
+- **Analytics Dashboard** - Track income vs expenses with visual charts and customizable date filters
+- **Export Data** - Download filtered transactions as CSV for external analysis
+- **Read-Only Demo** - See how it works with pre-populated sample data without affecting your account
 
 ## Tech Stack
 
 **Frontend:**
 - React 18 + TypeScript
-- Mantine UI component library
-- AWS Amplify client libraries
+- Mantine UI
+- AWS Amplify Client Library
+- Vite
 
 **Backend (AWS):**
-- Amplify Gen 2 for infrastructure as code
-- Cognito for authentication
-- AppSync for GraphQL API
-- DynamoDB for data storage
-- Lambda for serverless functions
-- S3 for file storage
+- Amplify Gen 2
+- AppSync
+- Cognito
+- DynamoDB
+- S3
+- Lambda
 
-**Development:**
-- Vite for build tooling
-- Custom hooks for state management
-- Modular component architecture
+## Technical Challenges
 
-## Local Development
+### Race Condition: Hook Before Auth
+`useTransactions` was calling `observeQuery()` before authentication completed, causing AWS to reject requests since there was no "owner" token yet. 
 
-```bash
-# Clone the repo
-git clone https://github.com/redas4/bills.git
-cd bills
+I fixed this by ensuring `useTransactions` only initializes after the `Authenticator` verifies the user's login status. This reinforced the importance of explicitly sequencing component initialization with authentication state.
 
-# Install dependencies
-npm install
+### Circular Dependency in CloudFormation
+Lambda, DynamoDB, and S3 created a circular dependency during deployment because Lambda referenced the S3 bucket, which depended on the data stack, which included Lambda. 
 
-# Start Amplify sandbox (deploys backend to AWS)
-npx ampx sandbox
+I resolved this by removing S3 access from Lambda and instead handling file cleanup in the frontend before deleting transactions. This taught me that simpler solutions that avoid tight coupling are better.
 
-# In another terminal, start the dev server
-npm run dev
-```
+### Auth State Management with Real-Time Subscriptions
+When users signed out and signed in as a different account, the old user's transactions persisted until page refresh. The AppSync subscription wasn't re-initializing when auth state changed because the effect dependency array wasn't triggering re-runs. 
+
+I solved this by using Amplify Hub to listen for `signedIn`/`signedOut` events and manually re-initialize the data subscription. This taught me that real-time systems require explicit lifecycle management—auth state changes don't automatically cascade to subscriptions.
+
+## Next Features
+
+- **Bank Account Integration** - Connect to Plaid or Stripe to auto-import transactions, eliminating manual data entry
+- **Smart Receipt Analysis** - Use AWS Textract or Claude API to automatically extract amounts and descriptions from uploaded documents
+- **Budget Alerts** - Set monthly spending limits per category and receive notifications when approaching budget
+- **Monthly Reports** - Generate and email spending summaries with trends and insights
+- **Recurring Transactions** - Auto-create repeat transactions (rent, subscriptions, etc.) to save time
+
+## Run Locally
+
+1. Clone the repo: `git clone https://github.com/paul-io/bills-budgeting.git`
+2. Install dependencies: `npm install`
+3. Start sandbox: `npx @aws-amplify/backend-cli sandbox`
+4. In another terminal: `npm run dev`
+5. Open http://localhost:5173
 
 The sandbox creates an isolated backend environment tied to your AWS account. You'll need:
 - An AWS account
@@ -113,7 +107,7 @@ Uses Amplify's pipeline deployment for production:
 npx ampx pipeline-deploy --branch main
 ```
 
-This creates separate environments for sandbox (dev) and production, with isolated databases and auth pools.
+This project uses Amplify's CI/CD pipeline. Connect your GitHub repo in the AWS Console. Every push to the selected branch triggers deployment to frontend and backend.
 
 ## Project Structure
 
@@ -139,34 +133,10 @@ amplify/
 └── functions/    # Lambda handlers
 ```
 
-## Implementation Notes
-
-**Why DynamoDB Streams + Lambda?**
-
-When a user deletes a transaction, the attached file in S3 needs cleanup. Rather than handling this in the client (unreliable) or AppSync resolver (complex), I set up a DynamoDB Stream that triggers a Lambda function. The function reads the deleted record, extracts the S3 path, and removes the file. This guarantees cleanup even if the client disconnects mid-request.
-
-**Why Owner-Based Authorization?**
-
-Initially used API key auth for faster development. Switched to Cognito owner-based rules before production to ensure data isolation. Each transaction is tagged with the creating user's ID, and AppSync automatically filters queries. This prevents data leaks without custom resolver logic.
-
-**Modular Architecture**
-
-Originally built as a single 700-line component. Refactored into custom hooks and smaller components to improve maintainability and demonstrate production-quality code organization.
-
-## Security Considerations
-
-This app is built for portfolio demonstration. In production, I'd add:
-- WAF rules to block malicious traffic
-- CloudWatch dashboards for monitoring
-- Automated backups for DynamoDB
-- Tighter S3 bucket policies
-
-Current setup includes budget alerts and rate limiting through Cognito to prevent abuse.
-
 ## License
 
 MIT
 
 ---
 
-Built by Paulo Ioffreda • [GitHub](https://github.com/redas4)
+Built by Paul Ioffreda • [GitHub](https://github.com/paul-io)

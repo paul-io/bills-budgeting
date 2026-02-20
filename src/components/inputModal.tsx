@@ -12,6 +12,7 @@ type Transaction = Schema["Transaction"]["type"];
 
 interface TransactionModalProps {
   mode: "create" | "edit";
+  isDemoUser: boolean,
   transaction?: Transaction;
   onSave: (
     fields: {
@@ -27,7 +28,7 @@ interface TransactionModalProps {
   close: () => void;
 }
 
-export default function TransactionModal({ mode, transaction, onSave, close }: TransactionModalProps) {
+export default function TransactionModal({ mode, isDemoUser, transaction, onSave, close }: TransactionModalProps) {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState<number>(0);
   const [date, setDate] = useState<string | null>(null);
@@ -417,7 +418,7 @@ export default function TransactionModal({ mode, transaction, onSave, close }: T
 
       <Space h="lg" />
 
-      <Button type="submit" onClick={handleSubmit} fullWidth>
+      <Button type="submit" disabled={isDemoUser} onClick={handleSubmit} fullWidth>
         {mode === "create" ? "Save" : "Update"}
       </Button>
     </form>

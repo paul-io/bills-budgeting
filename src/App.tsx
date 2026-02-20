@@ -86,7 +86,8 @@ function App() {
     }
   };
 
-  const renderContent = () => {
+  const renderContent = (user: any) => {
+    const isDemoUser = user?.username === 'DemoUser@example.com';
     switch (activeSection) {
       case 'dashboard':
         return (
@@ -100,6 +101,7 @@ function App() {
           <TransactionsPage
             transactions={transactions}
             isLoading={isLoadingTransactions}
+            isDemoUser={isDemoUser}
             onCreateTransaction={openCreateModal}
             onEditTransaction={openEditModal}
             onDeleteTransaction={handleDeleteWithTransaction}
@@ -153,7 +155,7 @@ function App() {
               onNavigate={setActiveSection}
               onExport={exportToCSV}
             >
-              {renderContent()}
+              {renderContent(user)}
             </AppLayout>
 
             <Modal
@@ -176,6 +178,7 @@ function App() {
               ) : (
                 <TransactionModal
                   mode={modalMode}
+                  isDemoUser={user?.username === 'DemoUser@example.com' ? true : false}
                   transaction={editingTransaction ?? undefined}
                   onSave={handleModalSave}
                   close={() => setModalOpen(false)}

@@ -1,6 +1,6 @@
 // src/components/transactions/TransactionsPage.tsx
-import { Stack, Group, Title, Button, Skeleton, Paper } from '@mantine/core';
-import { IconPlus } from '@tabler/icons-react';
+import { Stack, Group, Title, Button, Skeleton, Paper, Alert } from '@mantine/core';
+import { IconAlertCircle, IconPlus } from '@tabler/icons-react';
 import { TransactionFilters } from './TransactionFilters';
 import { TransactionTable } from './TransactionTable';
 import { EmptyState } from '../shared/EmptyState';
@@ -13,6 +13,7 @@ import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 interface TransactionsPageProps {
   transactions: Transaction[];
   isLoading: boolean;
+  isDemoUser: boolean;
   onCreateTransaction: () => void;
   onEditTransaction: (transaction: Transaction) => void;
   onDeleteTransaction: (transaction: Transaction) => void;
@@ -22,11 +23,13 @@ interface TransactionsPageProps {
 export const TransactionsPage = ({
   transactions,
   isLoading,
+  isDemoUser,
   onCreateTransaction,
   onEditTransaction,
   onDeleteTransaction,
   onViewAttachment,
 }: TransactionsPageProps) => {
+
   // Use the filter hook
   const {
     filterType,
@@ -68,6 +71,11 @@ export const TransactionsPage = ({
   if (isLoading) {
     return (
       <Stack>
+        {isDemoUser && (
+        <Alert icon={<IconAlertCircle size={16} />} title="Demo Account - Read Only" color="yellow" mb="lg">
+          This is a read-only demo account. Create your own account to add, edit, or delete transactions.
+        </Alert>
+        )}
         <Group justify="space-between">
           <Skeleton height={32} width={200} />
           <Skeleton height={36} width={160} />

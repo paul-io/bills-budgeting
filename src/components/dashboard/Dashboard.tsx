@@ -21,11 +21,12 @@ export const Dashboard = ({ transactions, isLoading }: DashboardProps) => {
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  const monthlyTransactions = transactions.filter(trans => {
-    if (!trans.date) return false;
-    const transDate = new Date(trans.date);
-    return transDate.getMonth() === currentMonth && transDate.getFullYear() === currentYear;
-  });
+const monthlyTransactions = transactions.filter(trans => {
+  if (!trans.date) return false;
+  const [year, month, day] = trans.date.split('-').map(Number);
+  const transDate = new Date(year, month - 1, day); 
+  return transDate.getMonth() === currentMonth && transDate.getFullYear() === currentYear;
+});
 
   const monthlyIncome = monthlyTransactions
     .filter(trans => trans.type === "income")

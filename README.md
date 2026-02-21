@@ -1,142 +1,150 @@
+<div align="center">
+
 # Bills Budgeting
 
-Bills Budgeting is a full-stack personal finance app built with modern AWS infrastructure. Track income and expenses, upload file attachments, get real-time updates, and see detailed analytics on spending patterns. Try the deployed site below.
+**A full-stack personal finance app deployed on AWS featuring real-time sync, S3 file storage, and a serverless backend provisioned with Amplify Gen 2.**
 
-## [#Click me to try the app yourself](https://master.ddu5dedoqfjsz.amplifyapp.com/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Available-4CAF50?style=flat&logo=amazonaws&logoColor=white)](https://master.ddu5dedoqfjsz.amplifyapp.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![AWS Amplify](https://img.shields.io/badge/AWS-Amplify%20Gen%202-FF9900?logo=amazonaws&logoColor=white)](https://docs.amplify.aws/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+[**→ Try the Live App**](https://master.ddu5dedoqfjsz.amplifyapp.com/)
+
+---
+
+![Demo GIF](./docs/Demo.gif)
+
+</div>
+
+---
 
 ## Demo Account
 
-Test the app without creating an account:
+A pre-populated read-only account is available to explore the app without signing up:
 
-- **Email:** DemoUser@example.com
-- **Password:** Password123!
+| Field | Value |
+|---|---|
+| Email | `DemoUser@example.com` |
+| Password | `Password123!` |
 
-This account is read-only and pre-populated with sample transactions.
-
-![Demo GIF](./docs/Demo.gif)
+---
 
 ## Architecture
 
 ![Architecture Diagram](./docs/architecture.png)
 
-## About This Project
-
-I built Bills Budgeting to deep-dive into full-stack development with AWS infrastructure. 
-Specifically, I wanted hands-on experience with:
-
-- **AWS Services** - Practical experience with DynamoDB, S3, Lambda, CloudWatch, Cognito and AppSync
-- **Infrastructure-as-Code** - Using Amplify Gen 2 to orchestrate backend resources in TypeScript 
-- **Authentication & Authorization** - Implementing Cognito user pools and owner-based data 
-  access rules
-- **Real-time data synchronization** - Understanding how AppSync subscriptions work and 
-  managing data state across multiple users
-
-
-Beyond the tech, I wanted to build something **complete and deployable**—not just a local 
-project. This meant learning deployment workflows, handling edge cases, and debugging issues 
-in production.
+---
 
 ## Features
 
-- **Transaction Management** - Create, update, and delete income and expense entries with real-time sync
-- **File Attachments** - Upload receipts and documents to transactions, stored securely in S3
-- **Real-Time Updates** - Changes appear instantly via AppSync subscriptions—no page refresh needed
-- **Analytics Dashboard** - Track income vs expenses with visual charts and customizable date filters
-- **Export Data** - Download filtered transactions as CSV for external analysis
-- **Read-Only Demo** - See how it works with pre-populated sample data without affecting your account
+- **Transaction Management** — create, edit, and delete income and expense entries with real-time sync across sessions
+- **File Attachments** — upload receipts and documents to any transaction, stored securely in S3
+- **Real-Time Updates** — changes appear instantly via AppSync subscriptions, no page refresh required
+- **Analytics Dashboard** — visualize spending patterns with bar, line, and area charts filtered by date range or transaction type
+- **CSV Export** — download any filtered transaction view for use in external tools
+- **Authentication** — Cognito user pools with owner-based data access rules; your data is isolated to your account
+
+---
 
 ## Tech Stack
 
-**Frontend:**
+**Frontend**
 - React 18 + TypeScript
 - Mantine UI
 - AWS Amplify Client Library
 - Vite
 
-**Backend (AWS):**
-- Amplify Gen 2
-- AppSync
-- Cognito
-- DynamoDB
-- S3
-- Lambda
+**Backend (AWS)**
+- Amplify Gen 2 — infrastructure-as-code, backend resources defined in TypeScript
+- AppSync — GraphQL API with real-time subscription support
+- Cognito — user authentication and authorization
+- DynamoDB — NoSQL data storage
+- S3 — file attachment storage
+- Lambda — serverless functions
+- CloudWatch — logging and monitoring
+
+---
 
 ## Technical Challenges
 
-### Race Condition: Hook Before Auth
-`useTransactions` was calling `observeQuery()` before authentication completed, causing AWS to reject requests since there was no "owner" token yet. 
-
-I fixed this by ensuring `useTransactions` only initializes after the `Authenticator` verifies the user's login status. This reinforced the importance of explicitly sequencing component initialization with authentication state.
+### Race Condition: Hook Initializing Before Auth
+`useTransactions` was calling `observeQuery()` before authentication completed, causing AWS to reject requests since no owner token existed yet. Fixed by ensuring the hook only initializes after the `Authenticator` component confirms the user's session, reinforcing the importance of explicitly sequencing initialization with auth state.
 
 ### Circular Dependency in CloudFormation
-Lambda, DynamoDB, and S3 created a circular dependency during deployment because Lambda referenced the S3 bucket, which depended on the data stack, which included Lambda. 
+Lambda, DynamoDB, and S3 created a circular dependency during deployment: Lambda referenced the S3 bucket, which depended on the data stack, which included Lambda. Resolved by removing S3 access from Lambda entirely and handling file cleanup on the frontend before transaction deletion. Simpler architecture, no tight coupling.
 
-I resolved this by removing S3 access from Lambda and instead handling file cleanup in the frontend before deleting transactions. This taught me that simpler solutions that avoid tight coupling are better.
+### Auth State Changes Not Propagating to Subscriptions
+When a user signed out and a different account signed in, the previous user's transactions persisted until page refresh. The AppSync subscription wasn't re-initializing because the effect dependency array wasn't responding to auth state changes. Solved by using Amplify Hub to listen for `signedIn` and `signedOut` events and manually re-initializing the subscription showing real-time systems require explicit lifecycle management that doesn't happen automatically.
 
-### Auth State Management with Real-Time Subscriptions
-When users signed out and signed in as a different account, the old user's transactions persisted until page refresh. The AppSync subscription wasn't re-initializing when auth state changed because the effect dependency array wasn't triggering re-runs. 
-
-I solved this by using Amplify Hub to listen for `signedIn`/`signedOut` events and manually re-initialize the data subscription. This taught me that real-time systems require explicit lifecycle management—auth state changes don't automatically cascade to subscriptions.
-
-## Next Features
-
-- **Bank Account Integration** - Connect to Plaid or Stripe to auto-import transactions, eliminating manual data entry
-- **Smart Receipt Analysis** - Use AWS Textract or Claude API to automatically extract amounts and descriptions from uploaded documents
-- **Budget Alerts** - Set monthly spending limits per category and receive notifications when approaching budget
-- **Monthly Reports** - Generate and email spending summaries with trends and insights
-- **Recurring Transactions** - Auto-create repeat transactions (rent, subscriptions, etc.) to save time
-
-## Run Locally
-
-1. Clone the repo: `git clone https://github.com/paul-io/bills-budgeting.git`
-2. Install dependencies: `npm install`
-3. Start sandbox: `npx @aws-amplify/backend-cli sandbox`
-4. In another terminal: `npm run dev`
-5. Open http://localhost:5173
-
-The sandbox creates an isolated backend environment tied to your AWS account. You'll need:
-- An AWS account
-- AWS CLI configured with credentials
-- Node.js 18+
-
-## Deployment
-
-Uses Amplify's pipeline deployment for production:
-
-```bash
-npx ampx pipeline-deploy --branch main
-```
-
-This project uses Amplify's CI/CD pipeline. Connect your GitHub repo in the AWS Console. Every push to the selected branch triggers deployment to frontend and backend.
+---
 
 ## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── dashboard/       # Summary cards, charts
-│   ├── transactions/    # CRUD interface, filters, table
-│   ├── layout/          # App shell, header, nav
-│   └── shared/          # Reusable components
+│   ├── dashboard/           # Summary cards and charts
+│   ├── transactions/        # CRUD interface, filters, table
+│   ├── layout/              # App shell, header, nav
+│   └── shared/              # Reusable UI components
 ├── hooks/
-│   ├── useTransactions.ts       # CRUD operations, CSV export
+│   ├── useTransactions.ts       # CRUD operations and CSV export
 │   └── useTransactionFilters.ts # Sorting, filtering, search
 └── utils/
-    ├── types.ts         # TypeScript definitions
-    ├── constants.ts     # App-wide constants
-    └── formatters.ts    # Date/currency formatting
+    ├── types.ts             # TypeScript definitions
+    ├── constants.ts         # App-wide constants
+    └── formatters.ts        # Date and currency formatting
 
 amplify/
-├── auth/         # Cognito configuration
-├── data/         # GraphQL schema, DynamoDB setup
-├── storage/      # S3 bucket configuration
-└── functions/    # Lambda handlers
+├── auth/                    # Cognito configuration
+├── data/                    # GraphQL schema and DynamoDB setup
+├── storage/                 # S3 bucket configuration
+└── functions/               # Lambda handlers
 ```
-
-## License
-
-MIT
 
 ---
 
-Built by Paul Ioffreda • [GitHub](https://github.com/paul-io)
+## Run Locally
+
+**Prerequisites:** Node.js 18+, AWS account, AWS CLI configured
+
+```bash
+git clone https://github.com/paul-io/bills-budgeting.git
+cd bills-budgeting
+npm install
+
+# In one terminal start the cloud sandbox (provisions isolated AWS backend)
+npx @aws-amplify/backend-cli sandbox
+
+# In another terminal start the frontend
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173)
+
+---
+
+## Deployment
+
+Connected to Amplify's CI/CD pipeline every push to `main` triggers a full frontend and backend deployment automatically.
+
+```bash
+npx ampx pipeline-deploy --branch main
+```
+
+---
+
+## Roadmap
+
+- [ ] **Bank Integration** — connect via Plaid to auto-import transactions
+- [ ] **Smart Receipt Scanning** — use AWS Textract to extract amounts and descriptions from uploaded documents
+- [ ] **Budget Alerts** — set monthly spending limits per category with notifications
+- [ ] **Recurring Transactions** — auto-create repeat entries for rent, subscriptions, etc.
+- [ ] **Monthly Email Reports** — scheduled spending summaries with trend insights
+
+---
+
+## License
+
+MIT © [Paul](https://github.com/paul-io)
